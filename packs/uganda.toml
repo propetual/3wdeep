@@ -8,8 +8,8 @@
 id = "uganda_urban"
 name = "Uganda Urban Professional & Street Pack"
 version = "1.0.0"
-author = "Group 4 / Geldof"
-description = "Translates foreign AI cliches and Western concepts into authentic Kampala context."
+author = " Geldof"
+description = "Translates foreign AI cliches and Western concepts into authentic Kampala contextor close enough."
 
 # ------------------------------------------------------------------------------
 # 1. LOCAL NUTRITION & FOOD REALITIES
@@ -24,7 +24,7 @@ description = "Translates foreign AI cliches and Western concepts into authentic
 "avocado toast" = "fresh avocado and boiled eggs"
 "protein shake" = "groundnut (binyebwa) paste or roasted soy"
 "mixed berries" = "fresh passion fruits and yellow bananas"
-"oatmeal" = "millet porridge (obushera) or spiced tea"
+"oatmeal" = "millet porridge (obushera) "
 "energy snack" = "roasted groundnuts or a light rolex"
 
 [nutrition.common_dishes]
@@ -32,7 +32,7 @@ description = "Translates foreign AI cliches and Western concepts into authentic
 "sweet potato" = "lumonde"
 "maize meal" = "posho / kawunga"
 "peanut butter sauce" = "ebinyebwa (groundnut sauce)"
-"fried plantain wrap" = "street rolex"
+
 
 # ------------------------------------------------------------------------------
 # 2. URBAN COMMUTE & KAMPALA MOBILITY
@@ -40,9 +40,9 @@ description = "Translates foreign AI cliches and Western concepts into authentic
 # AI talks about 'commute friction' or 'subway transit'. In Kampala, it's traffic.
 
 [mobility.commute]
-"subway commute" = "taxi / matatu ride"
+"subway commute" = "taxi ride"
 "rideshare transit" = "boda-boda ride"
-"severe transit delay" = "gridlock jam along Jinja Road or Kira Road"
+"severe transit delay" = "heavy traffic jam"
 "highway transit" = "moving via the Northern Bypass"
 "neighborhood transit" = "walking through estate access roads"
 "bad road conditions" = "potholes and rainy evening diversions"
@@ -56,15 +56,15 @@ description = "Translates foreign AI cliches and Western concepts into authentic
 "digital payment gateway" = "MTN MoMo or Airtel Money"
 "credit card billing" = "Mobile Money prompt"
 "transaction fee" = "cash-out / withdrawal fee"
-"wholesaler district" = "downtown Kikuubo trading hub"
+"wholesaler district" = "downtown / Kikuubo"
 "informal savings club" = "village savings group / SACCO"
 "daily earnings" = "daily gym floor allowance"
 
 # ------------------------------------------------------------------------------
 # 4. DE-AI-ING UGANDAN CORPORATE SPEAK
 # ------------------------------------------------------------------------------
-# Common stiff phrases inherited from British colonial administration & corporate habits
-# transformed into crisp, modern human English.
+# example of stiff phrases inherited from British colonial administration & corporate habits
+
 
 [corporate_idioms]
 "kindly revert back at your earliest convenience" = "please reply when you have a moment"
@@ -73,6 +73,6 @@ description = "Translates foreign AI cliches and Western concepts into authentic
 "at the close of business today" = "by 5:00 PM today"
 "we are seized with the matter" = "we are currently working on this"
 "inform your good self" = "let you know"
-"commercial friction points" = "everyday hassles in Kampala"
+"commercial friction points" = "everyday hassles"
 "digital aggregation platform" = "booking platform"
 "scalable SaaS margins" = "lean software costs"

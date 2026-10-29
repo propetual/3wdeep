@@ -1,0 +1,78 @@
+# ==============================================================================
+# FLEXIFIT / DE-AI: UGANDA REGIONAL CULTURAL & VOCABULARY PACK
+# ==============================================================================
+# Region: East Africa / Uganda (Kampala Urban Dialect)
+# Purpose: Replaces foreign/abstract corporate jargon with grounded Ugandan realities.
+
+[pack_metadata]
+id = "uganda_urban"
+name = "Uganda Urban Professional & Street Pack"
+version = "1.0.0"
+author = "Group 4 / Geldof"
+description = "Translates foreign AI cliches and Western concepts into authentic Kampala context."
+
+# ------------------------------------------------------------------------------
+# 1. LOCAL NUTRITION & FOOD REALITIES
+# ------------------------------------------------------------------------------
+# Western AI apps recommend kale, quinoa, and Greek yogurt. 
+# This dictionary grounds diets in authentic East African food staples.
+
+[nutrition.staples]
+"kale salad" = "sukuma wiki"
+"quinoa bowl" = "plate of matooke and fresh beans"
+"greek yogurt" = "cultured milk / bongo"
+"avocado toast" = "fresh avocado and boiled eggs"
+"protein shake" = "groundnut (binyebwa) paste or roasted soy"
+"mixed berries" = "fresh passion fruits and yellow bananas"
+"oatmeal" = "millet porridge (obushera) or spiced tea"
+"energy snack" = "roasted groundnuts or a light rolex"
+
+[nutrition.common_dishes]
+"commercial cafeteria meal" = "office lunch of katogo or posho and beans"
+"sweet potato" = "lumonde"
+"maize meal" = "posho / kawunga"
+"peanut butter sauce" = "ebinyebwa (groundnut sauce)"
+"fried plantain wrap" = "street rolex"
+
+# ------------------------------------------------------------------------------
+# 2. URBAN COMMUTE & KAMPALA MOBILITY
+# ------------------------------------------------------------------------------
+# AI talks about 'commute friction' or 'subway transit'. In Kampala, it's traffic.
+
+[mobility.commute]
+"subway commute" = "taxi / matatu ride"
+"rideshare transit" = "boda-boda ride"
+"severe transit delay" = "gridlock jam along Jinja Road or Kira Road"
+"highway transit" = "moving via the Northern Bypass"
+"neighborhood transit" = "walking through estate access roads"
+"bad road conditions" = "potholes and rainy evening diversions"
+
+# ------------------------------------------------------------------------------
+# 3. LOCAL COMMERCE, PAYMENTS & UGX FINANCES
+# ------------------------------------------------------------------------------
+# Grounding financial terms in Mobile Money and local commercial hubs.
+
+[finance.local_economy]
+"digital payment gateway" = "MTN MoMo or Airtel Money"
+"credit card billing" = "Mobile Money prompt"
+"transaction fee" = "cash-out / withdrawal fee"
+"wholesaler district" = "downtown Kikuubo trading hub"
+"informal savings club" = "village savings group / SACCO"
+"daily earnings" = "daily gym floor allowance"
+
+# ------------------------------------------------------------------------------
+# 4. DE-AI-ING UGANDAN CORPORATE SPEAK
+# ------------------------------------------------------------------------------
+# Common stiff phrases inherited from British colonial administration & corporate habits
+# transformed into crisp, modern human English.
+
+[corporate_idioms]
+"kindly revert back at your earliest convenience" = "please reply when you have a moment"
+"do the needful" = "handle this"
+"avail the document" = "share the document"
+"at the close of business today" = "by 5:00 PM today"
+"we are seized with the matter" = "we are currently working on this"
+"inform your good self" = "let you know"
+"commercial friction points" = "everyday hassles in Kampala"
+"digital aggregation platform" = "booking platform"
+"scalable SaaS margins" = "lean software costs"

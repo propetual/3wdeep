@@ -15,9 +15,8 @@ import math
 import json
 from typing import Dict, List, Tuple
 
-# ============================================================================
 # CATALOGUES: EXPANDABLE RULES FOR AI IDENTIFICATION & REPLACEMENT
-# ============================================================================
+
 
 FILLERS_TO_PRUNE = [
     r"\bit is important to (note|remember|highlight) that\b",
@@ -99,9 +98,7 @@ CONTRACTIONS_MAP = {
 }
 
 
-# ============================================================================
 # ANALYSIS & HUMANIZATION LOGIC
-# ============================================================================
 
 class TextHumanizer:
     def __init__(self, custom_replacements: Dict[str, str] = None):
@@ -231,9 +228,8 @@ class TextHumanizer:
         }
 
 
-# ============================================================================
 # CLI INTERFACE
-# ============================================================================
+
 if __name__ == "__main__":
     sample_ai_text = (
         "Furthermore, it is important to note that our digital aggregation platform "
@@ -242,23 +238,22 @@ if __name__ == "__main__":
         "In order to facilitate growth, we utilize a holistic approach that underscores efficiency."
     )
 
-    print("=" * 70)
-    print("🔍 AI HUMANIZER ENGINE — RUNNING SAMPLE TEST")
-    print("=" * 70)
+    print(" AI HUMANIZER ENGINE — RUNNING SAMPLE TEST")
+  
     print("\n[ORIGINAL AI TEXT]:")
     print(sample_ai_text)
 
     humanizer = TextHumanizer()
     result = humanizer.humanize(sample_ai_text)
 
-    print("\n" + "-" * 70)
+    print("\n")
     print("[HUMANIZED RESULT]:")
     print(result["humanized"])
-    print("-" * 70)
-    print(f"📊 AI Density Score:   {result['ai_density_score']}")
-    print(f"📈 Burstiness (Cadence): {result['burstiness_index']} ({result['cadence_feedback']})")
-    print(f"✂️ Edits Performed:     {result['total_edits']}")
+  
+    print(f"AI Density Score:   {result['ai_density_score']}")
+    print(f" Burstiness (Cadence): {result['burstiness_index']} ({result['cadence_feedback']})")
+    print(f" Edits Performed:     {result['total_edits']}")
     print("\n[CHANGES LOG]:")
     for change in result["changes"]:
         print(f" • {change}")
-    print("=" * 70)
+   

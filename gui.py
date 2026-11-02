@@ -31,9 +31,9 @@ from humanizer import TextHumanizer, FILLERS_TO_PRUNE, REPLACEMENTS_MAP, CONTRAC
 PACKS_DIR = Path(__file__).parent / "packs"
 
 
-# ==============================================================================
+
 # DYNAMIC PACK LOADER (ZERO HARDCODING)
-# ==============================================================================
+
 
 def extract_replacements_from_toml(data: dict) -> Dict[str, str]:
     """Recursively extracts all key-value string replacements from any TOML structure."""
@@ -78,9 +78,7 @@ def discover_packs() -> List[Dict]:
     return packs
 
 
-# ==============================================================================
 # MAIN APPLICATION WINDOW
-# ==============================================================================
 
 class HumanizerWindow(Adw.ApplicationWindow):
     def __init__(self, app):
@@ -91,9 +89,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.active_packs: Dict[str, bool] = {}
         self.discovered_packs = discover_packs()
         for p in self.discovered_packs:
-            # Enable Uganda pack by default if present, others optional
-            self.active_packs[p["filename"]] = ("uganda" in p["filename"].lower())
-
+        
         self.rebuild_engine()
 
         # Build UI layout
@@ -135,7 +131,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.metrics_bar.add_css_class("toolbar")
         main_box.append(self.metrics_bar)
 
-        self.ai_density_label = Gtk.Label.new("AI Density: 0.0%")
+        self.ai_density_label = Gtk.Label.new("Density: 0.0%")
         self.ai_density_label.add_css_class("title-4")
         self.metrics_bar.append(self.ai_density_label)
 
@@ -192,11 +188,11 @@ class HumanizerWindow(Adw.ApplicationWindow):
         output_header = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 8)
         right_box.append(output_header)
 
-        output_title = Gtk.Label.new("HUMANIZED OUTPUT")
+        output_title = Gtk.Label.new("OUTPUT")
         output_title.add_css_class("heading")
         output_header.append(output_title)
 
-        copy_btn = Gtk.Button.new_with_label("📋 Copy Clean Text")
+        copy_btn = Gtk.Button.new_with_label("Copy Clean Text")
         copy_btn.set_halign(Gtk.Align.END)
         copy_btn.set_hexpand(True)
         copy_btn.add_css_class("suggested-action")
@@ -224,18 +220,18 @@ class HumanizerWindow(Adw.ApplicationWindow):
         bottom_bar.set_margin_bottom(16)
         main_box.append(bottom_bar)
 
-        self.scan_btn = Gtk.Button.new_with_label("🔍 Scan for Buzzwords")
+        self.scan_btn = Gtk.Button.new_with_label("Buzzwords!!!)
         self.scan_btn.connect("clicked", self.on_scan_clicked)
         bottom_bar.append(self.scan_btn)
 
-        self.humanize_btn = Gtk.Button.new_with_label("✨ Humanize Text")
+        self.humanize_btn = Gtk.Button.new_with_label("Humanize")
         self.humanize_btn.add_css_class("suggested-action")
         self.humanize_btn.connect("clicked", self.on_humanize_clicked)
         bottom_bar.append(self.humanize_btn)
 
-    # --------------------------------------------------------------------------
+    
     # ENGINE & PACK MANAGEMENT
-    # --------------------------------------------------------------------------
+    
 
     def rebuild_engine(self):
         """Rebuilds the TextHumanizer instance by combining core rules + active packs."""
@@ -323,10 +319,9 @@ class HumanizerWindow(Adw.ApplicationWindow):
         except Exception as e:
             self.show_toast(f"Could not open folder: {e}")
 
-    # --------------------------------------------------------------------------
-    # DRAG & DROP HANDLING
-    # --------------------------------------------------------------------------
-
+    
+    # DRAG & DROP HANDLING  
+    
     def setup_drop_targets(self, widget):
         """Attaches file drop target to the input text view."""
         file_drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
@@ -352,9 +347,9 @@ class HumanizerWindow(Adw.ApplicationWindow):
                 self.show_toast(f"Failed to read file: {e}")
         return False
 
-    # --------------------------------------------------------------------------
+    
     # ANALYSIS & REWRITING
-    # --------------------------------------------------------------------------
+    
 
     def get_input_text(self) -> str:
         start = self.input_buffer.get_start_iter()
@@ -433,9 +428,9 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.toast_overlay.add_toast(toast)
 
 
-# ==============================================================================
+
 # APPLICATION ENTRYPOINT
-# ==============================================================================
+
 
 class DeAIApplication(Adw.Application):
     def __init__(self):

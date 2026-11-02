@@ -446,10 +446,8 @@ class DeAIApplication(Adw.Application):
         self.connect("activate", self.on_activate)
 
     def on_activate(self, app):
-        win = app.props.active_window
-        if not win:
-            win = HumanizerWindow(app)
-        win.present()
+        self.win = HumanizerWindow(app)
+        self.win.present()
 
 if __name__ == "__main__":
     app = DeAIApplication()

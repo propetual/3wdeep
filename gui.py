@@ -505,7 +505,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
     def on_jump_to_buzzword(self, btn):
         """Cycles through flagged buzzwords/fillers, selects the text, and centers it in view."""
         if not self.flagged_items:
-            self.show_toast("No buzzwords or fillers detected to jump to.")
+            self.show_toast("No buzzwords or fillers detected ")
             return
 
         self.current_jump_index = (self.current_jump_index + 1) % len(self.flagged_items)

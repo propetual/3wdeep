@@ -88,7 +88,6 @@ class HumanizerWindow(Adw.ApplicationWindow):
         # State
         self.active_packs: Dict[str, bool] = {}
         self.discovered_packs = discover_packs()
-        for p in self.discovered_packs:
         
         self.rebuild_engine()
 

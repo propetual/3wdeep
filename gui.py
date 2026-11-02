@@ -367,9 +367,9 @@ class HumanizerWindow(Adw.ApplicationWindow):
             return
 
         res = self.engine.humanize(raw)
-        self.ai_density_label.set_text(f"AI Density: {res['ai_density_score']}")
-        self.burstiness_label.set_text(f"Cadence (SD {res['burstiness_index']}): {res['cadence_feedback'].split('(')[0].strip()}")
-        self.edits_label.set_text(f"Edits Flagged: {res['total_edits']}")
+        self.ai_density_label.set_text(f"Density: {res['ai_density_score']}")
+        self.burstiness_label.set_text(f"Rhythm (SD {res['burstiness_index']}): {res['cadence_feedback'].split('(')[0].strip()}")
+        self.edits_label.set_text(f"Buzzwords: {res['total_edits']}")
 
         if auto_humanize:
             self.output_buffer.set_text(res['humanized'])
@@ -404,12 +404,11 @@ class HumanizerWindow(Adw.ApplicationWindow):
 
     def on_load_sample(self, btn):
         sample = (
-            "Furthermore, it is important to note that our digital aggregation platform "
-            "delves into commercial friction points to seamlessly foster scalable SaaS margins. "
-            "Moreover, this serves as a testament to the multifaceted realm of modern technology. "
-            "In order to facilitate growth, we utilize a holistic approach that underscores efficiency.\n\n"
-            "For breakfast, our team enjoyed avocado toast, greek yogurt, and a quinoa bowl "
-            "before facing severe transit delays on our subway commute."
+            It is important to note that tsunamis, as a subset of marine geohazards, occupy a uniquely challenging position within the global disaster risk reduction landscape due to their capacity to generate catastrophic impact across vast geographical distances within compressed timeframes. In order to operationalize an effective early warning and community response ecosystem, it is essential that governments, scientific institutions, and civil society organizations align their respective mandates around a shared framework of preparedness, communication, and adaptive action. At the end of the day, the margin between a warning and a tragedy is measured not in meters but in minutes.
+
+Moving forward, the integration of deep-ocean pressure sensor networks, satellite telemetry, and AI-assisted wave propagation modeling represents a transformative leap in the technical capacity of the global tsunami early warning infrastructure. To that end, it is worth noting that the human dimension of disaster response — community trust, behavioral compliance, and last-mile communication — remains the most critical and underinvested component of any comprehensive resilience strategy. It goes without saying that technology alone is insufficient without the cultural and institutional scaffolding to translate data into decisive action.
+
+Needless to say, the compounding effects of sea-level rise and increased seismic activity in subduction zone regions demand that we fundamentally rethink our assumptions about coastal risk exposure and the long-term viability of current settlement patterns. The key takeaway is that tsunami resilience is not a technical problem with a technical solution — it is a holistic, multi-generational challenge that requires the full mobilization of scientific, governmental, and community resources. Going forward, the imperative to do the needful is not merely a bureaucratic obligation — it is, quite literally, a matter of life and death.
         )
         self.input_buffer.set_text(sample)
         self.run_analysis(auto_humanize=True)

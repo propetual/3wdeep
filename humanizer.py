@@ -19,7 +19,7 @@ from typing import Dict, List, Tuple
 
 
 FILLERS_TO_PRUNE = [
-    # Throat-clearing and pseudo-profound framing
+    # verbous/ unnnecessary sentence bulk
     r"\bit is important to (note|remember|highlight) that\b",
     r"\bit is worth (noting|mentioning) that\b",
     r"\bit should be noted that\b",
@@ -237,7 +237,7 @@ class TextHumanizer:
         working_text = text
         changes_made = []
 
-        # Step 1: Prune Throat-Clearing Fillers
+        # Step 1: Prune verbous Fillers
         for pattern in self.fillers:
             matches = list(re.finditer(pattern, working_text, re.IGNORECASE))
             if matches:
@@ -315,8 +315,8 @@ if __name__ == "__main__":
     print("[HUMANIZED RESULT]:")
     print(result["humanized"])
   
-    print(f"AI Density Score:   {result['ai_density_score']}")
-    print(f" Burstiness (Cadence): {result['burstiness_index']} ({result['cadence_feedback']})")
+    print(f" Density Score:   {result['ai_density_score']}")
+    print(f" Rhythm: {result['burstiness_index']} ({result['cadence_feedback']})")
     print(f" Edits Performed:     {result['total_edits']}")
     print("\n[CHANGES LOG]:")
     for change in result["changes"]:

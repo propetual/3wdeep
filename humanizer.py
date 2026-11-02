@@ -19,17 +19,34 @@ from typing import Dict, List, Tuple
 
 
 FILLERS_TO_PRUNE = [
+    # Throat-clearing and pseudo-profound framing
     r"\bit is important to (note|remember|highlight) that\b",
     r"\bit is worth (noting|mentioning) that\b",
-    r"\bin order to\b",
-    r"\bat the end of the day\b",
-    r"\bby leveraging the power of\b",
-    r"\bplays a pivotal role in\b",
-    r"\bserves as a testament to\b",
-    r"\bin today's fast-paced (world|environment|digital age)\b",
     r"\bit should be noted that\b",
     r"\bit goes without saying that\b",
+    r"\bit is widely accepted that\b",
+    r"\bit can be seen that\b",
+    r"\bit is essential to (note|remember|understand)\b",
+    r"\bthe fact of the matter is that\b",
+    r"\bneedless to say,?\b",
+    r"\bas a matter of fact,?\b",
+    r"\bwhen all is said and done\b",
     r"\ball things considered\b",
+    r"\bat the end of the day\b",
+    r"\bfirst and foremost\b",
+    r"\bin light of the fact that\b",
+    r"\bdue to the fact that\b",
+    
+    # Empty intent / fluff padding
+    r"\bin order to\b",
+    r"\bby leveraging the power of\b",
+    r"\bplays a (pivotal|crucial|vital|key) role in\b",
+    r"\bserves as a testament to\b",
+    r"\bserves as a reminder that\b",
+    r"\bin today's fast-paced (world|environment|digital age)\b",
+    r"\bin the vast majority of cases\b",
+    r"\bfor the most part,?\b",
+    r"\bin terms of\b",
 ]
 
 REPLACEMENTS_MAP = {
@@ -59,6 +76,44 @@ REPLACEMENTS_MAP = {
     r"\belucidate\b": "explain",
     r"\bconcomitant\b": "connected",
     
+    # Textbook & explainer clichés (scientific / educational slop)
+    r"\bdrastically\b": "sharply",
+    r"\bdrastic\b": "sharp",
+    r"\bcrucial\b": "key",
+    r"\bdevastating\b": "destructive",
+    r"\bmyriad of\b": "many",
+    r"\ba myriad of\b": "many",
+    r"\ba plethora of\b": "plenty of",
+    r"\bundertake\b": "take on",
+    r"\bundertaken\b": "done",
+    r"\bcommence\b": "start",
+    r"\bterminate\b": "end",
+    r"\bdisseminate\b": "share",
+    r"\bdissemination\b": "sharing",
+    r"\bexpedite\b": "speed up",
+    r"\bexhibit\b": "show",
+    r"\bexhibits\b": "shows",
+    r"\bmitigate\b": "reduce",
+    r"\bmitigation\b": "reduction",
+    r"\bimperative\b": "essential",
+    r"\bnuanced\b": "detailed",
+    r"\bintrinsically\b": "naturally",
+    r"\bquintessential\b": "classic",
+    r"\bbespoke\b": "custom",
+    r"\bcomprehensive\b": "complete",
+    r"\bencompasses\b": "covers",
+    r"\bnoteworthy\b": "notable",
+    r"\bpredominantly\b": "mostly",
+    r"\bunderpinning\b": "foundation",
+    r"\bunderpinned\b": "supported",
+    r"\binterconnectedness\b": "connection",
+    r"\bat speeds comparable to\b": "as fast as",
+    r"\bacts as a battering ram against\b": "smashes into",
+    r"\bacts as a\b": "works as a",
+    r"\bprimary defenses\b": "main defenses",
+    r"\bsheer force of\b": "force of",
+    r"\ba series of enormous\b": "huge",
+    
     # Stiff transitions
     r"\bfurthermore,\b": "also,",
     r"\bmoreover,\b": "plus,",
@@ -79,6 +134,10 @@ REPLACEMENTS_MAP = {
     r"\bparadigm shift\b": "major change",
     r"\bsynergistic\b": "collaborative",
     r"\bholistic approach\b": "complete plan",
+    r"\bholistic\b": "thorough",
+    r"\bproactive\b": "active",
+    r"\bactionable\b": "practical",
+    r"\brobust\b": "strong",
 }
 
 CONTRACTIONS_MAP = {
@@ -101,10 +160,14 @@ CONTRACTIONS_MAP = {
 # ANALYSIS & HUMANIZATION LOGIC
 
 class TextHumanizer:
-    def __init__(self, custom_replacements: Dict[str, str] = None):
+    def __init__(self, custom_replacements: Dict[str, str] = None, custom_fillers: List[str] = None):
         self.replacements = dict(REPLACEMENTS_MAP)
         if custom_replacements:
             self.replacements.update(custom_replacements)
+            
+        self.fillers = list(FILLERS_TO_PRUNE)
+        if custom_fillers:
+            self.fillers.extend(custom_fillers)
 
     def split_sentences(self, text: str) -> List[str]:
         """Split text into sentences while preserving structure."""
@@ -136,13 +199,13 @@ class TextHumanizer:
         return round(std_dev, 2), round(avg_len, 1), cadence
 
     def scan_buzzwords(self, text: str) -> List[Dict]:
-        """Detect all AI buzzwords and fillers with character positions."""
+        """Detect all AI buzzwords and fillers with character positions, sorted in reading order."""
         flagged = []
         words = re.findall(r'\b\w+\b', text)
         total_words = max(len(words), 1)
 
         # 1. Scan Fillers
-        for pattern in FILLERS_TO_PRUNE:
+        for pattern in self.fillers:
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 flagged.append({
                     "matched": match.group(0),
@@ -161,6 +224,8 @@ class TextHumanizer:
                     "span": match.span()
                 })
 
+        # Sort flagged matches in order of appearance in the text
+        flagged.sort(key=lambda x: x["span"][0])
         return flagged
 
     def humanize(self, text: str, apply_contractions: bool = True) -> Dict:
@@ -173,7 +238,7 @@ class TextHumanizer:
         changes_made = []
 
         # Step 1: Prune Throat-Clearing Fillers
-        for pattern in FILLERS_TO_PRUNE:
+        for pattern in self.fillers:
             matches = list(re.finditer(pattern, working_text, re.IGNORECASE))
             if matches:
                 for match in matches:

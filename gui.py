@@ -63,6 +63,20 @@ window {
     border-radius: 8px;
 }
 
+/* Clickable buzzword jump badge */
+button.buzzword-jump {
+    font-weight: 600;
+    color: #ffd600;
+    background-color: alpha(#ffd600, 0.12);
+    border: 1px solid alpha(#ffd600, 0.35);
+    border-radius: 6px;
+    padding: 2px 10px;
+}
+button.buzzword-jump:hover {
+    background-color: alpha(#ffd600, 0.25);
+    color: #ffffff;
+}
+
 textview text {
     background-color: transparent;
 }
@@ -74,20 +88,46 @@ textview text {
 # DYNAMIC PACK LOADER (ZERO HARDCODING)
 
 
-def extract_replacements_from_toml(data: dict) -> Dict[str, str]:
-    """Recursively extracts all key-value string replacements from any TOML structure."""
+def extract_pack_data(data: dict) -> Tuple[Dict[str, str], List[str]]:
+    """
+    Extracts replacements and prune fillers from any TOML structure.
+    - [replacements] or nested tables: key-value pairs (or "phrase" = "" for deletion)
+    - [prune] table: can contain a list `fillers = ["...", "..."]` or key-value entries.
+    """
     replacements = {}
+    fillers = []
+
+    # 1. Dedicated prune section (e.g. [prune] fillers = ["phrase 1", "phrase 2"])
+    prune_sec = data.get("prune") or data.get("pruning") or {}
+    if isinstance(prune_sec, dict):
+        if "fillers" in prune_sec and isinstance(prune_sec["fillers"], list):
+            for f in prune_sec["fillers"]:
+                if isinstance(f, str) and f.strip():
+                    fillers.append(rf"\b{re.escape(f.strip())}\b")
+        for k, v in prune_sec.items():
+            if k != "fillers" and isinstance(k, str) and k.strip():
+                fillers.append(rf"\b{re.escape(k.strip())}\b")
+    elif isinstance(prune_sec, list):
+        for f in prune_sec:
+            if isinstance(f, str) and f.strip():
+                fillers.append(rf"\b{re.escape(f.strip())}\b")
+
+    # 2. Extract replacements recursively
     def recurse(node):
         if isinstance(node, dict):
             for k, v in node.items():
-                if k.lower() in ('pack_metadata', 'metadata', 'pack'):
+                if k.lower() in ('pack_metadata', 'metadata', 'pack', 'prune', 'pruning'):
                     continue
                 if isinstance(v, str):
-                    replacements[k.lower()] = v
+                    if v.strip() == "":
+                        # Empty string value means delete/prune!
+                        fillers.append(rf"\b{re.escape(k.strip().lower())}\b")
+                    else:
+                        replacements[k.lower()] = v
                 elif isinstance(v, dict):
                     recurse(v)
     recurse(data)
-    return replacements
+    return replacements, fillers
 
 def discover_packs() -> List[Dict]:
     """Scans packs/ directory and returns metadata for all available TOML packs."""
@@ -103,14 +143,16 @@ def discover_packs() -> List[Dict]:
             pack_name = meta.get("name") or toml_path.stem.replace("_", " ").title()
             pack_desc = meta.get("description") or f"Custom pack from {toml_path.name}"
             
-            reps = extract_replacements_from_toml(data)
+            reps, fillers = extract_pack_data(data)
+            total_rules = len(reps) + len(fillers)
             packs.append({
                 "path": toml_path,
                 "filename": toml_path.name,
                 "name": pack_name,
                 "description": pack_desc,
                 "replacements": reps,
-                "count": len(reps)
+                "fillers": fillers,
+                "count": total_rules
             })
         except Exception as e:
             print(f"Error parsing pack {toml_path}: {e}")
@@ -136,6 +178,8 @@ class HumanizerWindow(Adw.ApplicationWindow):
         # State
         self.active_packs: Dict[str, bool] = {}
         self.discovered_packs = discover_packs()
+        self.flagged_items: List[Dict] = []
+        self.current_jump_index: int = -1
         
         self.rebuild_engine()
 
@@ -186,9 +230,13 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.burstiness_label.add_css_class("dim-label")
         self.metrics_bar.append(self.burstiness_label)
 
-        self.edits_label = Gtk.Label.new("buzzwords: 0")
-        self.edits_label.add_css_class("dim-label")
-        self.metrics_bar.append(self.edits_label)
+        # Interactive Buzzword Jumper Button (hyperlinked badge)
+        self.buzzword_btn = Gtk.Button.new_with_label("Buzzwords: 0")
+        self.buzzword_btn.add_css_class("buzzword-jump")
+        self.buzzword_btn.set_tooltip_text("Click to jump directly to highlighted words")
+        self.buzzword_btn.connect("clicked", self.on_jump_to_buzzword)
+        self.buzzword_btn.set_sensitive(False)
+        self.metrics_bar.append(self.buzzword_btn)
 
         # 3. Main Split View (Input Left, Output Right)
         split_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
@@ -299,10 +347,15 @@ class HumanizerWindow(Adw.ApplicationWindow):
     def rebuild_engine(self):
         """Rebuilds the TextHumanizer instance by combining core rules + active packs."""
         merged_replacements = {}
+        merged_fillers = []
         for p in self.discovered_packs:
             if self.active_packs.get(p["filename"], False):
-                merged_replacements.update(p["replacements"])
-        self.engine = TextHumanizer(custom_replacements=merged_replacements)
+                merged_replacements.update(p.get("replacements", {}))
+                merged_fillers.extend(p.get("fillers", []))
+        self.engine = TextHumanizer(
+            custom_replacements=merged_replacements,
+            custom_fillers=merged_fillers
+        )
 
     def setup_packs_popover(self):
         """Builds the dynamic popover menu for all discovered TOML packs."""
@@ -355,7 +408,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.packs_menu_button.set_popover(popover)
 
     def on_create_new_pack(self, btn):
-        """Creates a starter TOML pack with zero preset locks."""
+        """Creates a starter TOML pack with replacements and pruning examples."""
         pack_id = f"custom_pack_{len(self.discovered_packs) + 1}.toml"
         target_path = PACKS_DIR / pack_id
         if not target_path.exists():
@@ -363,10 +416,17 @@ class HumanizerWindow(Adw.ApplicationWindow):
                 f'# Custom Dialect & Jargon Pack\n'
                 f'[pack_metadata]\n'
                 f'name = "Custom Dialect Pack"\n'
-                f'description = "Add your custom jargon and local slang here"\n\n'
+                f'description = "Add your custom jargon, replacements, and pruned phrases here"\n\n'
+                f'# 1. Substitutions (word or phrase -> replacement)\n'
                 f'[replacements]\n'
                 f'"commercial cafeteria meal" = "local lunch spot"\n'
-                f'"severe transit delay" = "traffic gridlock"\n'
+                f'"severe transit delay" = "traffic gridlock"\n\n'
+                f'# 2. Pruning (dead fluff phrases to delete entirely)\n'
+                f'[prune]\n'
+                f'fillers = [\n'
+                f'    "in light of the fact that",\n'
+                f'    "as a matter of course",\n'
+                f']\n'
             )
             target_path.write_text(template, encoding="utf-8")
         
@@ -423,7 +483,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
         pass
 
     def apply_highlights(self, raw: str):
-        """Clears old highlights then re-applies orange (filler) and yellow (buzzword) tags."""
+        """Clears old highlights, stores flagged positions, and applies orange/yellow tags."""
         buf = self.input_buffer
         start_iter = buf.get_start_iter()
         end_iter   = buf.get_end_iter()
@@ -432,20 +492,55 @@ class HumanizerWindow(Adw.ApplicationWindow):
         buf.remove_tag_by_name("filler",   start_iter, end_iter)
         buf.remove_tag_by_name("buzzword", start_iter, end_iter)
 
-        flagged = self.engine.scan_buzzwords(raw)
-        for item in flagged:
+        self.flagged_items = self.engine.scan_buzzwords(raw)
+        self.current_jump_index = -1
+
+        for item in self.flagged_items:
             span_start, span_end = item["span"]
             it_start = buf.get_iter_at_offset(span_start)
             it_end   = buf.get_iter_at_offset(span_end)
             tag_name = "filler" if item["type"] == "Throat-Clearing Filler" else "buzzword"
             buf.apply_tag_by_name(tag_name, it_start, it_end)
 
+    def on_jump_to_buzzword(self, btn):
+        """Cycles through flagged buzzwords/fillers, selects the text, and centers it in view."""
+        if not self.flagged_items:
+            self.show_toast("No buzzwords or fillers detected to jump to.")
+            return
+
+        self.current_jump_index = (self.current_jump_index + 1) % len(self.flagged_items)
+        item = self.flagged_items[self.current_jump_index]
+        span_start, span_end = item["span"]
+
+        it_start = self.input_buffer.get_iter_at_offset(span_start)
+        it_end   = self.input_buffer.get_iter_at_offset(span_end)
+
+        # 1. Visually select the flagged word
+        self.input_buffer.select_range(it_start, it_end)
+
+        # 2. Scroll the text view so the word is vertically centered
+        mark = self.input_buffer.create_mark("jump_target", it_start, False)
+        self.input_text_view.scroll_to_mark(mark, 0.05, True, 0.0, 0.5)
+        self.input_buffer.delete_mark(mark)
+
+        # 3. Update button label with progress
+        matched_preview = item['matched']
+        if len(matched_preview) > 16:
+            matched_preview = matched_preview[:14] + "…"
+        total = len(self.flagged_items)
+        self.buzzword_btn.set_label(f"🎯 [{self.current_jump_index + 1}/{total}] '{matched_preview}' ➔")
+        self.show_toast(f"[{self.current_jump_index + 1}/{total}] {item['type']}: '{item['matched']}'")
+
     def run_analysis(self, auto_humanize: bool = False):
         raw = self.get_input_text()
         if not raw.strip():
             self.ai_density_label.set_text("AI Density: 0.0%")
             self.burstiness_label.set_text("Cadence: Empty text")
-            self.edits_label.set_text("Edits Flagged: 0")
+            self.flagged_items = []
+            self.current_jump_index = -1
+            self.buzzword_btn.set_label("Buzzwords: 0")
+            self.buzzword_btn.set_sensitive(False)
+
             # Clear highlights too
             s = self.input_buffer.get_start_iter()
             e = self.input_buffer.get_end_iter()
@@ -456,11 +551,18 @@ class HumanizerWindow(Adw.ApplicationWindow):
         res = self.engine.humanize(raw)
         self.ai_density_label.set_text(f"Density: {res['ai_density_score']}")
         self.burstiness_label.set_text(f"Rhythm (SD {res['burstiness_index']}): {res['cadence_feedback'].split('(')[0].strip()}")
-        self.edits_label.set_text(f"Buzzwords: {res['total_edits']}")
 
         # ── Apply inline highlights on input pane ──────────────────────────
         self.apply_highlights(raw)
         # ──────────────────────────────────────────────────────────────────
+
+        count = len(self.flagged_items)
+        if count > 0:
+            self.buzzword_btn.set_label(f"🎯 Buzzwords: {count} (tap to jump)")
+            self.buzzword_btn.set_sensitive(True)
+        else:
+            self.buzzword_btn.set_label("Buzzwords: 0")
+            self.buzzword_btn.set_sensitive(False)
 
         if auto_humanize:
             self.output_buffer.set_text(res['humanized'])
@@ -496,8 +598,6 @@ class HumanizerWindow(Adw.ApplicationWindow):
     def on_load_sample(self, btn):
         sample = (
             "It is important to note that tsunamis, as a subset of marine geohazards, occupy a uniquely challenging position within the global disaster risk reduction landscape due to their capacity to generate catastrophic impact across vast geographical distances within compressed timeframes. In order to operationalize an effective early warning and community response ecosystem, it is essential that governments, scientific institutions, and civil society organizations align their respective mandates around a shared framework of preparedness, communication, and adaptive action. At the end of the day, the margin between a warning and a tragedy is measured not in meters but in minutes."
-"Moving forward, the integration of deep-ocean pressure sensor networks, satellite telemetry, and AI-assisted wave propagation modeling represents a transformative leap in the technical capacity of the global tsunami early warning infrastructure. To that end, it is worth noting that the human dimension of disaster response — community trust, behavioral compliance, and last-mile communication — remains the most critical and underinvested component of any comprehensive resilience strategy. It goes without saying that technology alone is insufficient without the cultural and institutional scaffolding to translate data into decisive action."
-"Needless to say, the compounding effects of sea-level rise and increased seismic activity in subduction zone regions demand that we fundamentally rethink our assumptions about coastal risk exposure and the long-term viability of current settlement patterns. The key takeaway is that tsunami resilience is not a technical problem with a technical solution — it is a holistic, multi-generational challenge that requires the full mobilization of scientific, governmental, and community resources. Going forward, the imperative to do the needful is not merely a bureaucratic obligation — it is, quite literally, a matter of life and death."
         )
         self.input_buffer.set_text(sample)
         self.run_analysis(auto_humanize=True)
@@ -506,6 +606,8 @@ class HumanizerWindow(Adw.ApplicationWindow):
     def on_clear_text(self, btn):
         self.input_buffer.set_text("")
         self.output_buffer.set_text("")
+        self.flagged_items = []
+        self.current_jump_index = -1
         self.run_analysis(auto_humanize=False)
         self.show_toast("Cleared.")
 

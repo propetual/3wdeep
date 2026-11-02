@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-DE-AI HUMANIZER (3wdeep) - Native Linux Desktop GUI
+3wdeep humanizer - Native Linux Desktop GUI
 Built with GTK 4 & Libadwaita
 
 Features:
 - Native Wayland / X11 rendering with automatic dark/light theme
 - Drag and drop text & file support (.txt, .md, .toml)
 - Dynamic Pack Discovery: scans packs/*.toml with zero hardcoded packs
-- Live metrics: AI Density %, Sentence Rhythm / Burstiness, and replacement stats
+- Live metrics: Density %, Sentence Rhythm / Burstiness, and replacement stats
 - One-click copy, sample text loader, and pack creation
 """
 

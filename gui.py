@@ -134,11 +134,11 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.ai_density_label.add_css_class("title-4")
         self.metrics_bar.append(self.ai_density_label)
 
-        self.burstiness_label = Gtk.Label.new("Cadence: Waiting for input")
+        self.burstiness_label = Gtk.Label.new("rhythm: Waiting for input")
         self.burstiness_label.add_css_class("dim-label")
         self.metrics_bar.append(self.burstiness_label)
 
-        self.edits_label = Gtk.Label.new("Edits Flagged: 0")
+        self.edits_label = Gtk.Label.new("buzzwords: 0")
         self.edits_label.add_css_class("dim-label")
         self.metrics_bar.append(self.edits_label)
 
@@ -219,7 +219,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
         bottom_bar.set_margin_bottom(16)
         main_box.append(bottom_bar)
 
-        self.scan_btn = Gtk.Button.new_with_label(" Buzzwords!!! ")
+        self.scan_btn = Gtk.Button.new_with_label(" Scan ")
         self.scan_btn.connect("clicked", self.on_scan_clicked)
         bottom_bar.append(self.scan_btn)
 

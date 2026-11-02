@@ -220,7 +220,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
         bottom_bar.set_margin_bottom(16)
         main_box.append(bottom_bar)
 
-        self.scan_btn = Gtk.Button.new_with_label("Buzzwords!!!)
+        self.scan_btn = Gtk.Button.new_with_label(" Buzzwords!!! ")
         self.scan_btn.connect("clicked", self.on_scan_clicked)
         bottom_bar.append(self.scan_btn)
 

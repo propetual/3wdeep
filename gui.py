@@ -528,14 +528,14 @@ class HumanizerWindow(Adw.ApplicationWindow):
         if len(matched_preview) > 16:
             matched_preview = matched_preview[:14] + "…"
         total = len(self.flagged_items)
-        self.buzzword_btn.set_label(f"🎯 [{self.current_jump_index + 1}/{total}] '{matched_preview}' ➔")
+        self.buzzword_btn.set_label(f"[{self.current_jump_index + 1}/{total}] '{matched_preview}' ➔")
         self.show_toast(f"[{self.current_jump_index + 1}/{total}] {item['type']}: '{item['matched']}'")
 
     def run_analysis(self, auto_humanize: bool = False):
         raw = self.get_input_text()
         if not raw.strip():
-            self.ai_density_label.set_text("AI Density: 0.0%")
-            self.burstiness_label.set_text("Cadence: Empty text")
+            self.ai_density_label.set_text("Density: 0.0%")
+            self.burstiness_label.set_text("rhythm: Empty text")
             self.flagged_items = []
             self.current_jump_index = -1
             self.buzzword_btn.set_label("Buzzwords: 0")
@@ -552,13 +552,13 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.ai_density_label.set_text(f"Density: {res['ai_density_score']}")
         self.burstiness_label.set_text(f"Rhythm (SD {res['burstiness_index']}): {res['cadence_feedback'].split('(')[0].strip()}")
 
-        # ── Apply inline highlights on input pane ──────────────────────────
+        # Apply inline highlights on input pane
         self.apply_highlights(raw)
-        # ──────────────────────────────────────────────────────────────────
+        
 
         count = len(self.flagged_items)
         if count > 0:
-            self.buzzword_btn.set_label(f"🎯 Buzzwords: {count} (tap to jump)")
+            self.buzzword_btn.set_label(f" Buzzwords: {count} ")
             self.buzzword_btn.set_sensitive(True)
         else:
             self.buzzword_btn.set_label("Buzzwords: 0")

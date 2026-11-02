@@ -82,8 +82,8 @@ def discover_packs() -> List[Dict]:
 
 class HumanizerWindow(Adw.ApplicationWindow):
     def __init__(self, app):
-        super().__init__(application=app, title="De-AI Humanizer")
-        self.set_default_size(980, 680)
+        super().__init__(application=app, title="3W-DEEP!")
+        self.set_default_size(1000, 680)
         
         # State
         self.active_packs: Dict[str, bool] = {}

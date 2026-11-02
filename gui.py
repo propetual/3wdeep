@@ -9,6 +9,7 @@ Features:
 - Dynamic Pack Discovery: scans packs/*.toml with zero hardcoded packs
 - Live metrics: Density %, Sentence Rhythm / Burstiness, and replacement stats
 - One-click copy, sample text loader, and pack creation
+- Inline buzzword highlighting (orange = filler, yellow = cliché)
 """
 
 import os
@@ -29,6 +30,26 @@ from gi.repository import Gtk, Adw, Gio, GLib, Gdk, GObject
 from humanizer import TextHumanizer, FILLERS_TO_PRUNE, REPLACEMENTS_MAP, CONTRACTIONS_MAP
 
 PACKS_DIR = Path(__file__).parent / "packs"
+
+# ── BACKGROUND IMAGE ──────────────────────────────────────────────────────────
+# Drop your exported GIMP image into the project folder and update this path.
+# Supported formats: PNG, JPG, WebP.  Set to None to disable.
+#
+# BACKGROUND_IMAGE = Path(__file__).parent / "background.png"
+BACKGROUND_IMAGE = None
+# ─────────────────────────────────────────────────────────────────────────────
+
+APP_CSS = """
+window {
+    /* background-image: url("file:///home/geldof/Downloads/databaise/background.png"); */
+    /* background-size: cover; */
+    /* background-position: center; */
+}
+
+textview.input-view text {
+    background-color: transparent;
+}
+"""
 
 
 
@@ -84,7 +105,16 @@ class HumanizerWindow(Adw.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app, title="3W-DEEP!")
         self.set_default_size(1000, 680)
-        
+
+        # Load CSS (background image + highlight colours)
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_string(APP_CSS)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
         # State
         self.active_packs: Dict[str, bool] = {}
         self.discovered_packs = discover_packs()
@@ -174,6 +204,22 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.input_text_view.set_bottom_margin(12)
         self.input_buffer = self.input_text_view.get_buffer()
         self.input_buffer.connect("changed", self.on_text_changed)
+
+        # ── Highlight tags (applied by apply_highlights()) ─────────────────
+        tag_table = self.input_buffer.get_tag_table()
+
+        filler_tag = Gtk.TextTag.new("filler")
+        filler_tag.set_property("background", "#ff9800")   # orange  – throat-clearing
+        filler_tag.set_property("foreground", "#000000")
+        filler_tag.set_property("weight", 700)
+        tag_table.add(filler_tag)
+
+        buzzword_tag = Gtk.TextTag.new("buzzword")
+        buzzword_tag.set_property("background", "#ffd600")  # yellow  – AI cliché
+        buzzword_tag.set_property("foreground", "#000000")
+        buzzword_tag.set_property("weight", 700)
+        tag_table.add(buzzword_tag)
+        # ──────────────────────────────────────────────────────────────────
         input_scroller.set_child(self.input_text_view)
 
         # Setup Drag & Drop on Input View
@@ -358,18 +404,45 @@ class HumanizerWindow(Adw.ApplicationWindow):
     def on_text_changed(self, buffer):
         pass
 
+    def apply_highlights(self, raw: str):
+        """Clears old highlights then re-applies orange (filler) and yellow (buzzword) tags."""
+        buf = self.input_buffer
+        start_iter = buf.get_start_iter()
+        end_iter   = buf.get_end_iter()
+
+        # Wipe all previous highlight tags
+        buf.remove_tag_by_name("filler",   start_iter, end_iter)
+        buf.remove_tag_by_name("buzzword", start_iter, end_iter)
+
+        flagged = self.engine.scan_buzzwords(raw)
+        for item in flagged:
+            span_start, span_end = item["span"]
+            it_start = buf.get_iter_at_offset(span_start)
+            it_end   = buf.get_iter_at_offset(span_end)
+            tag_name = "filler" if item["type"] == "Throat-Clearing Filler" else "buzzword"
+            buf.apply_tag_by_name(tag_name, it_start, it_end)
+
     def run_analysis(self, auto_humanize: bool = False):
         raw = self.get_input_text()
         if not raw.strip():
             self.ai_density_label.set_text("AI Density: 0.0%")
             self.burstiness_label.set_text("Cadence: Empty text")
             self.edits_label.set_text("Edits Flagged: 0")
+            # Clear highlights too
+            s = self.input_buffer.get_start_iter()
+            e = self.input_buffer.get_end_iter()
+            self.input_buffer.remove_tag_by_name("filler",   s, e)
+            self.input_buffer.remove_tag_by_name("buzzword", s, e)
             return
 
         res = self.engine.humanize(raw)
         self.ai_density_label.set_text(f"Density: {res['ai_density_score']}")
         self.burstiness_label.set_text(f"Rhythm (SD {res['burstiness_index']}): {res['cadence_feedback'].split('(')[0].strip()}")
         self.edits_label.set_text(f"Buzzwords: {res['total_edits']}")
+
+        # ── Apply inline highlights on input pane ──────────────────────────
+        self.apply_highlights(raw)
+        # ──────────────────────────────────────────────────────────────────
 
         if auto_humanize:
             self.output_buffer.set_text(res['humanized'])

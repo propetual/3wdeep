@@ -31,13 +31,13 @@ from humanizer import TextHumanizer, FILLERS_TO_PRUNE, REPLACEMENTS_MAP, CONTRAC
 
 PACKS_DIR = Path(__file__).parent / "packs"
 
-# ── BACKGROUND IMAGE ──────────────────────────────────────────────────────────
-# Drop your exported GIMP image into the project folder and update this path.
+# BACKGROUND IMAGE 
+# Drop your exported  image into the project folder and update this path.
 # Supported formats: PNG, JPG, WebP.  Set to None to disable.
 #
 # BACKGROUND_IMAGE = Path(__file__).parent / "background.png"
 BACKGROUND_IMAGE = None
-# ─────────────────────────────────────────────────────────────────────────────
+#
 
 APP_CSS = """
 window {
@@ -271,11 +271,11 @@ class HumanizerWindow(Adw.ApplicationWindow):
         self.input_buffer = self.input_text_view.get_buffer()
         self.input_buffer.connect("changed", self.on_text_changed)
 
-        # ── Highlight tags (applied by apply_highlights()) ─────────────────
+        # Highlight tags 
         tag_table = self.input_buffer.get_tag_table()
 
         filler_tag = Gtk.TextTag.new("filler")
-        filler_tag.set_property("background", "#ff9800")   # orange  – throat-clearing
+        filler_tag.set_property("background", "#ff9800")   # orange  –lowkey unnecessary/verbous
         filler_tag.set_property("foreground", "#000000")
         filler_tag.set_property("weight", 700)
         tag_table.add(filler_tag)
@@ -285,7 +285,7 @@ class HumanizerWindow(Adw.ApplicationWindow):
         buzzword_tag.set_property("foreground", "#000000")
         buzzword_tag.set_property("weight", 700)
         tag_table.add(buzzword_tag)
-        # ──────────────────────────────────────────────────────────────────
+        
         input_scroller.set_child(self.input_text_view)
 
         # Setup Drag & Drop on Input View

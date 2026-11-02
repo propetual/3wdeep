@@ -41,15 +41,33 @@ BACKGROUND_IMAGE = None
 
 APP_CSS = """
 window {
-    /* background-image: url("file:///home/geldof/Downloads/databaise/background.png"); */
-    /* background-size: cover; */
+    /* ── Earthy grain texture tile ─────────────────────────────────── */
+    background-image:  url("file:///home/geldof/Downloads/databaise/texture.png");
+    background-repeat: repeat;
+    background-size:   256px 256px;
+
+    /* ── Swap these in for the interim animation image later ────────── */
+    /* background-image: url("file:///home/geldof/Downloads/databaise/background.jpg"); */
+    /* background-size:  cover;  */
     /* background-position: center; */
 }
 
-textview.input-view text {
+/* Keep text areas readable — their own card colour sits on top of texture */
+.card {
+    background-color: alpha(@card_bg_color, 0.88);
+}
+
+/* Metrics bar slight tint so labels don't float on raw grain */
+.toolbar {
+    background-color: alpha(@headerbar_bg_color, 0.75);
+    border-radius: 8px;
+}
+
+textview text {
     background-color: transparent;
 }
 """
+
 
 
 
